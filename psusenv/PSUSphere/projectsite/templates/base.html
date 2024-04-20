@@ -78,7 +78,8 @@
 										</a>
 										<a href="#">
 											<div class="notif-img"> 
-												<img src="../assets/img/profile2.jpg" alt="Img Profile">
+												<img src="{% static 'img/profile2.jpg' %}" alt="Img Profile">
+                                                
 											</div>
 											<div class="notif-content">
 												<span class="block">
@@ -176,7 +177,7 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{% url 'organization_list' %}">
+							<a href="{% url 'organization-list' %}">
 								<i class="la la-table"></i>
 							<p>Organization</p>
 							</a>
