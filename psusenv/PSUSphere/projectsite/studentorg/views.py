@@ -1,22 +1,14 @@
+from datetime import datetime
 from django.shortcuts import render
-
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from .models import Organization, OrgMember, Student, College, Program
+from .models import Organization, OrgMember, Student, College, Program, Incidents  # Ensure Incidents model is imported
 from .forms import OrganizationForm, OrgMemberForm, StudentForm, CollegeForm, ProgramForm
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from typing import Any
-from django.db.models.query import QuerySet
-from django.db.models import Q
 from django.db import connection
 from django.http import JsonResponse
-from django.db.models.functions import ExtractMonth
-
-from django.db.models import Count
-from datetime import datetime
-
-
+from django.db.models import Q
 
 @method_decorator(login_required, name='dispatch')
 class HomePageView(ListView):
@@ -53,9 +45,31 @@ def PieCountbySeverity(request):
 
     return JsonResponse(data)
 
+def LineCountbyMonth(request):
+    current_year = datetime.now().year
 
+    result = {month: 0 for month in range(1, 13)}
 
-#ORGANIZATION
+    incidents_per_month = Incidents.objects.filter(date_time__year=current_year) \
+        .values_list('date_time', flat=True)
+
+    # Counting the number of incidents per month
+    for date_time in incidents_per_month:
+        month = date_time.month
+        result[month] += 1
+
+    # If you want to convert month numbers to month names, you can use a dictionary mapping
+    month_names = {
+        1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+        7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+    }
+    result_with_month_names = {
+        month_names[int(month)]: count for month, count in result.items()
+    }
+
+    return JsonResponse(result_with_month_names)
+
+# ORGANIZATION
 class OrganizationList(ListView):
     model = Organization
     context_object_name = 'organization'
@@ -64,10 +78,9 @@ class OrganizationList(ListView):
 
     def get_queryset(self, *args, **kwargs):
         qs = super(OrganizationList, self).get_queryset(*args, **kwargs)
-        if self.request.GET.get("q") != None:
+        if self.request.GET.get("q") is not None:
             query = self.request.GET.get('q')
-            qs = qs.filter(Q(name__icontains=query) |
-                           Q(description__icontains=query))
+            qs = qs.filter(Q(name__icontains=query) | Q(description__icontains=query))
         return qs
 
 class OrganizationCreateView(CreateView):
@@ -87,7 +100,7 @@ class OrganizationDeleteView(DeleteView):
     template_name = 'org_del.html'
     success_url = reverse_lazy('organization-list')
 
-#ORGANIZATION MEMBER
+# ORGANIZATION MEMBER
 class OrgMemberList(ListView):
     model = OrgMember
     context_object_name = 'orgmember'
@@ -111,8 +124,7 @@ class OrgMemberDeleteView(DeleteView):
     template_name = 'orgmem_del.html'
     success_url = reverse_lazy('orgmember-list')
 
-
-#STUDENT
+# STUDENT
 class StudentList(ListView):
     model = Student
     context_object_name = 'organization'
@@ -136,7 +148,7 @@ class StudentDeleteView(DeleteView):
     template_name = 'student_delete.html'
     success_url = reverse_lazy('student-list')
 
-#COLLEGE
+# COLLEGE
 class CollegeListView(ListView):
     model = College
     context_object_name = 'college'
@@ -148,7 +160,6 @@ class CollegeCreateView(CreateView):
     form_class = CollegeForm
     template_name = 'college_add.html'
     success_url = reverse_lazy('college-list')
-    
 
 class CollegeUpdateView(UpdateView):
     model = College
@@ -161,8 +172,7 @@ class CollegeDeleteView(DeleteView):
     template_name = 'college_del.html'
     success_url = reverse_lazy('college-list')
 
-#Program
-
+# PROGRAM
 class ProgramListView(ListView):
     model = Program
     context_object_name = 'program'
@@ -174,7 +184,6 @@ class ProgramCreateView(CreateView):
     form_class = ProgramForm
     template_name = 'program_add.html'
     success_url = reverse_lazy('program-list')
-    
 
 class ProgramUpdateView(UpdateView):
     model = Program
