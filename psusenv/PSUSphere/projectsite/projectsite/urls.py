@@ -20,7 +20,7 @@ from django.contrib.auth import views as auth_views
 from studentorg.views import HomePageView, OrganizationList, OrganizationCreateView, OrganizationUpdateView, OrganizationDeleteView, OrgMemberList, OrgMemberCreateView, OrgMemberUpdateView, OrgMemberDeleteView, StudentList, StudentCreateView, StudentUpdateView, StudentDeleteView
 from studentorg.views import CollegeListView, CollegeCreateView, CollegeUpdateView, CollegeDeleteView, ProgramListView, ProgramCreateView, ProgramUpdateView, ProgramDeleteView
 from studentorg import views
-from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth, MultilineIncidentTop3Country
+from fire.views import HomePageView, ChartView, PieCountbySeverity, LineCountbyMonth, MultilineIncidentTop3Country, multipleBarbySeverity
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +29,7 @@ urlpatterns = [
     path('chart/', PieCountbySeverity, name='chart'),
     path('lineChart/', LineCountbyMonth, name='chart'),
     path('multilineChart/', MultilineIncidentTop3Country, name='chart'),
+    path('multiBarChart/', multipleBarbySeverity, name='chart'),
     path('organization_list/' , OrganizationList.as_view(), name= 'organization-list'),
     path('organization_list/add/' , OrganizationCreateView.as_view(), name= 'organization-add'),
     path('organization_list/<pk>/' , OrganizationUpdateView.as_view(), name= 'organization-update'),
